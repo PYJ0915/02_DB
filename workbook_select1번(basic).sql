@@ -7,7 +7,6 @@ SELECT DEPARTMENT_NAME || '의 정원은 ' || CAPACITY || '명 입니다.' "학�
 FROM TB_DEPARTMENT;
 
 -- 3.
-
 -- 학과 번호 조회용
 SELECT DEPARTMENT_NAME "학과명", DEPARTMENT_NO "학과 번호" 
 FROM TB_DEPARTMENT;
@@ -18,8 +17,6 @@ FROM TB_STUDENT
 WHERE SUBSTR(STUDENT_SSN, 8, 1) = '2' 
 AND ABSENCE_YN = 'Y' 
 AND DEPARTMENT_NO = '001';
-
-
 
 -- 4.
 SELECT STUDENT_NAME 

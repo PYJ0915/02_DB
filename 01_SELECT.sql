@@ -37,9 +37,7 @@ SELECT EMP_ID + 10 FROM EMPLOYEE;
 -- 날짜 (DATE) 타입 조회
 
 -- EMPLOYEE 테이블에서 이름, 입사일, 오늘 날짜 조회
-
 SELECT EMP_NAME, HIRE_DATE, SYSDATE FROM EMPLOYEE;
-
 -- 2025-10-17 10:36:18.000
 -- SYSDATE : 시스템 상의 현재 시간(날짜)를 나타내는 상수
 
@@ -142,15 +140,12 @@ SELECT EMP_NAME, HIRE_DATE FROM EMPLOYEE WHERE HIRE_DATE BETWEEN '1990-01-01' AN
 -- '_' 예시 : 'A_' => A로 시작하는 두 글자 문자열, '____A' => A로 끝나는 5글자 문자열, '__A__' => 세 번째 문자가 A인 다섯 글자 문자열 ... 
 
 -- EMPLOYEE 테이블에서 성이 '전' 씨인 사원의 사번, 이름 조회
-
 SELECT EMP_ID, EMP_NAME FROM EMPLOYEE WHERE EMP_NAME LIKE '전%';
 
 -- EMPLOYEE 테이블에서 전화번호가 010으로 시작하지 않는 사원의 사번, 이름, 전화번호 조회
-
 SELECT EMP_ID, EMP_NAME, PHONE FROM EMPLOYEE WHERE PHONE NOT LIKE '010%';
 
 -- EMPLOYEE 테이블에서 이메일의 _앞의 글자가 세글자인 사원만 이름, 이메일 조회
-
 SELECT EMP_NAME, EMAIL FROM EMPLOYEE WHERE EMAIL LIKE '___#_%' ESCAPE '#';
 
 -- ESCAPE 문자
@@ -190,7 +185,7 @@ AND SALARY >= 2700000;
  * 비교하려는 값과 목록에 작성된 값 중 일치하는 것이 있으면 조회하는 연산자
  * 
  * [작성법]
- * WHERE 컬럼명 S(값1, 값2, 값3...);
+ * WHERE 컬럼명 IN(값1, 값2, 값3...);
  * 
  * WHERE 컬럼명 = '값1' OR 컬럼명 = '값2' ...;
  * 
@@ -250,10 +245,3 @@ SELECT EMP_NAME, HIRE_DATE "입사일" FROM EMPLOYEE ORDER BY 입사일;
 -- 부서 코드를 오름차 순으로 정렬 후 급여 내림차 순 정렬
 
 SELECT EMP_NAME, DEPT_CODE, SALARY FROM EMPLOYEE ORDER BY DEPT_CODE, SALARY DESC;
-
-
-
-
-
-
-
