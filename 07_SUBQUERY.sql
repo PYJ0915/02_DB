@@ -1,10 +1,10 @@
 /*
  * SUBQUERY (서브쿼리 == 내부쿼리)
- * - 하나의 SQL문 안에 포함된 또 다른 SQL 문
+ * - 하나의 SQL문 안에 포함된 또 다른 SQL(SELECT) 문
  * - 메인쿼리(== 외부쿼리, 기존 쿼리)를 위해 보조 역할을 하는 쿼리문
  * 
  * - 메인쿼리가 SELECT문일 때 SELECT, FROM, WHERE, HAVING절에서 사용 가능!
- * - 메인쿼리는 꼭 SELECT문일 필요 없지만 서브쿼리는 SELECT문 이어야함!
+ * - 메인쿼리는 꼭 SELECT문일 필요 없지만 서브쿼리는 꼭 SELECT문 이어야함!
  * 
  * */
 
