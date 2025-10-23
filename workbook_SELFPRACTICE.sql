@@ -1,0 +1,67 @@
+
+-- 1. DML 
+
+-- 1) 새로운 학과를 추가하시오.
+
+/* 학과번호: '064', 학과명: '데이터사이언스학과',
+   계열: '공학', 개설여부: 'Y', 정원: 30*/
+
+SELECT * FROM TB_DEPARTMENT2;
+
+INSERT INTO TB_DEPARTMENT2 VALUES('064', '데이터사이언스학과', '공학', 'Y', 30);
+
+-- 2) '데이터사이언스학과'의 정원을 40으로 수정하시오.
+UPDATE TB_DEPARTMENT2 SET CAPACITY = 40
+WHERE DEPARTMENT_NAME = '데이터사이언스학과';
+
+-- 3) '데이터사이언스학과'를 삭제하시오.
+DELETE FROM TB_DEPARTMENT2
+WHERE DEPARTMENT_NAME = '데이터사이언스학과';
+
+-- 2. TCL
+
+SELECT * FROM TB_CLASS2;
+
+-- 1) '국어국문학과'에 두 개의 새로운 과목을 추가하고, ROLLBACK으로 복원하시오.
+INSERT INTO TB_CLASS2 VALUES('C9999999', '001', NULL, '한글정보처리', '전공선택');
+INSERT INTO TB_CLASS2 VALUES('C9999998', '001', NULL, '고전시가', '전공선택');
+
+ROLLBACK;
+
+-- 2) 다시 '한글정보처리' 과목을 추가하고, COMMIT을 수행하시오.
+INSERT INTO TB_CLASS2 VALUES('C9999999', '001', NULL, '한글정보처리', '전공선택');
+
+COMMIT;
+
+-- 3. JOIN
+
+-- 1) 각 과목의 이름과 해당 학과명을 조회하시오. (학과가 없는 과목도 모두 표시)
+SELECT * FROM TB_DEPARTMENT2;
+SELECT * FROM TB_CLASS2;
+SELECT * FROM TB_PROFESSOR2;
+SELECT * FROM TB_STUDENT2;
+
+SELECT CLASS_NAME, DEPARTMENT_NAME 
+FROM TB_CLASS2  
+LEFT JOIN TB_DEPARTMENT2 USING(DEPARTMENT_NO);
+
+-- 2) 각 교수의 이름과 소속 학과명을 조회하시오.
+SELECT PROFESSOR_NAME, DEPARTMENT_NAME
+FROM TB_PROFESSOR2 
+JOIN TB_DEPARTMENT2 USING(DEPARTMENT_NO);
+
+-- 3) 각 학생의 이름, 소속 학과명, 지도 교수 이름을 조회하시오. (지도 교수가 없는 학생도 포함)
+SELECT STUDENT_NAME, DEPARTMENT_NAME, PROFESSOR_NAME
+FROM TB_STUDENT2 
+JOIN TB_DEPARTMENT2 USING(DEPARTMENT_NO)
+LEFT JOIN TB_PROFESSOR2 ON (COACH_PROFESSOR_NO = PROFESSOR_NO);
+
+-- 4. SUBQUERY
+
+
+
+
+
+
+
+
