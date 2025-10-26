@@ -1,7 +1,5 @@
 
--- 1. DML 
-
--- 1) 새로운 학과를 추가하시오.
+-- 1. 새로운 학과를 추가하시오.
 
 /* 학과번호: '064', 학과명: '데이터사이언스학과',
    계열: '공학', 개설여부: 'Y', 정원: 30*/
@@ -10,32 +8,28 @@ SELECT * FROM TB_DEPARTMENT2;
 
 INSERT INTO TB_DEPARTMENT2 VALUES('064', '데이터사이언스학과', '공학', 'Y', 30);
 
--- 2) '데이터사이언스학과'의 정원을 40으로 수정하시오.
+-- 2. '데이터사이언스학과'의 정원을 40으로 수정하시오.
 UPDATE TB_DEPARTMENT2 SET CAPACITY = 40
 WHERE DEPARTMENT_NAME = '데이터사이언스학과';
 
--- 3) '데이터사이언스학과'를 삭제하시오.
+-- 3. '데이터사이언스학과'를 삭제하시오.
 DELETE FROM TB_DEPARTMENT2
 WHERE DEPARTMENT_NAME = '데이터사이언스학과';
 
--- 2. TCL
-
 SELECT * FROM TB_CLASS2;
 
--- 1) '국어국문학과'에 두 개의 새로운 과목을 추가하고, ROLLBACK으로 복원하시오.
+-- 4. '국어국문학과'에 두 개의 새로운 과목을 추가하고, ROLLBACK으로 복원하시오.
 INSERT INTO TB_CLASS2 VALUES('C9999999', '001', NULL, '한글정보처리', '전공선택');
 INSERT INTO TB_CLASS2 VALUES('C9999998', '001', NULL, '고전시가', '전공선택');
 
 ROLLBACK;
 
--- 2) 다시 '한글정보처리' 과목을 추가하고, COMMIT을 수행하시오.
+-- 5. 다시 '한글정보처리' 과목을 추가하고, COMMIT을 수행하시오.
 INSERT INTO TB_CLASS2 VALUES('C9999999', '001', NULL, '한글정보처리', '전공선택');
 
 COMMIT;
 
--- 3. JOIN
-
--- 1) 각 과목의 이름과 해당 학과명을 조회하시오. (학과가 없는 과목도 모두 표시)
+-- 6. 각 과목의 이름과 해당 학과명을 조회하시오. (학과가 없는 과목도 모두 표시)
 SELECT * FROM TB_DEPARTMENT2;
 SELECT * FROM TB_CLASS2;
 SELECT * FROM TB_PROFESSOR2;
@@ -45,18 +39,68 @@ SELECT CLASS_NAME, DEPARTMENT_NAME
 FROM TB_CLASS2  
 LEFT JOIN TB_DEPARTMENT2 USING(DEPARTMENT_NO);
 
--- 2) 각 교수의 이름과 소속 학과명을 조회하시오.
+-- 7. 각 교수의 이름과 소속 학과명을 조회하시오.
 SELECT PROFESSOR_NAME, DEPARTMENT_NAME
 FROM TB_PROFESSOR2 
 JOIN TB_DEPARTMENT2 USING(DEPARTMENT_NO);
 
--- 3) 각 학생의 이름, 소속 학과명, 지도 교수 이름을 조회하시오. (지도 교수가 없는 학생도 포함)
+-- 8. 각 학생의 이름, 소속 학과명, 지도 교수 이름을 조회하시오. (지도 교수가 없는 학생도 포함)
 SELECT STUDENT_NAME, DEPARTMENT_NAME, PROFESSOR_NAME
 FROM TB_STUDENT2 
 JOIN TB_DEPARTMENT2 USING(DEPARTMENT_NO)
 LEFT JOIN TB_PROFESSOR2 ON (COACH_PROFESSOR_NO = PROFESSOR_NO);
 
--- 4. SUBQUERY
+ -- 9. 문제 1. 조인 구조 심화 — 지도교수가 소속 학과와 다른 학과 학생 찾기
+
+/*	
+  - 조건
+    TB_STUDENT와 TB_PROFESSOR를 조인하여 학생의 학과(DEPARTMENT_NO)와 지도교수의 학과(DEPARTMENT_NO)가 다른 경우만 조회하시오.
+    
+  - 출력 컬럼: 학생이름(STUDENT_NAME), 학생학과명(DEPARTMENT_NAME), 지도교수명(PROFESSOR_NAME), 지도교수학과명(PROFESSOR_DEPT_NAME)
+	결과는 학생이름 오름차순 정렬 
+*/
+
+SELECT * FROM TB_CLASS_PROFESSOR;
+SELECT * FROM TB_PROFESSOR;
+SELECT * FROM TB_DEPARTMENT;
+SELECT * FROM TB_STUDENT;
+SELECT * FROM TB_GRADE;
+SELECT * FROM TB_CLASS;
+
+SELECT STUDENT_NAME "학생이름", TD.DEPARTMENT_NAME "학생의 학과", PROFESSOR_NAME "지도교수명", TD2.DEPARTMENT_NAME "교수 학과명"
+FROM TB_STUDENT TS JOIN TB_DEPARTMENT TD ON(TS.DEPARTMENT_NO = TD.DEPARTMENT_NO)
+JOIN TB_PROFESSOR TP ON (COACH_PROFESSOR_NO = TP.PROFESSOR_NO)
+JOIN TB_DEPARTMENT TD2 ON (TP.DEPARTMENT_NO = TD2.DEPARTMENT_NO)
+WHERE TS.DEPARTMENT_NO != TP.DEPARTMENT_NO
+ORDER BY 1;
+
+-- 10. 환경조경학과와 같은 CATEGORY(계열)에 속한 학과들의 과목 중에서 가장 평균 평점이 높은 과목명과 해당 학과명을 조회하시오
+SELECT 학과명, 과목명, 평균평점 
+FROM(SELECT RANK() OVER(ORDER BY AVG(POINT) DESC) 순위, DEPARTMENT_NAME 학과명, CLASS_NAME 과목명, AVG(POINT) 평균평점
+FROM TB_DEPARTMENT 
+JOIN TB_CLASS USING(DEPARTMENT_NO)
+JOIN TB_GRADE USING(CLASS_NO)
+WHERE CATEGORY = (SELECT CATEGORY FROM TB_DEPARTMENT WHERE DEPARTMENT_NAME = '환경조경학과')
+GROUP BY DEPARTMENT_NAME, CLASS_NAME)
+WHERE 순위 IN(1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
