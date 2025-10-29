@@ -87,7 +87,7 @@ WHERE 순위 IN(1);
 -- 11. 학교 성적 관리 시스템 구축 (DDL + DML + JOIN + SUBQUERY)
 -- 학교 데이터베이스를 설계하고, 학생·과목·성적 정보를 관리하는 SQL문을 작성하시오.
 
--- 1) 테이블 생성 (DDL)
+-- [1단계] 테이블 생성 (DDL)
 /*
 	STUDENT : 학번, 이름, 학과명, 입학일
 	SUBJECT : 과목번호, 과목명, 구분(전공/교양 등)
@@ -98,9 +98,12 @@ WHERE 순위 IN(1);
 	성적(POINT)은 0.0 ~ 4.5 사이의 값만 허용되도록 제약조건 추가
 */
 
+DROP TABLE STUDENT;
+DROP TABLE SUBJECT;
+DROP TABLE GRADE;
 
 CREATE TABLE STUDENT(
-	STUDENT_NO NUMBER PRIMARY KEY,
+	STUDENT_NO VARCHAR2(20) PRIMARY KEY,
 	STUDENT_NAME VARCHAR2(30),
 	DEPT_NAME VARCHAR2(50),
 	ENTRANCE_DATE DATE DEFAULT SYSDATE
@@ -113,7 +116,7 @@ CREATE TABLE SUBJECT (
 );
 
 CREATE TABLE GRADE(
-	STUDENT_NO NUMBER REFERENCES STUDENT,
+	STUDENT_NO VARCHAR2(20) REFERENCES STUDENT,
 	SUBJECT_NO VARCHAR2(20) REFERENCES SUBJECT,
 	POINT NUMBER CHECK(POINT BETWEEN 0.0 AND 4.5),
 	CONSTRAINT PKEY_GRADE PRIMARY KEY (STUDENT_NO, SUBJECT_NO)
@@ -121,7 +124,7 @@ CREATE TABLE GRADE(
 
 -- 외래키이면서 그 테이블의 기본키일 수 있다!!
 
--- 2.데이터 삽입 (DML)
+-- [2단계] 데이터 삽입 (DML)
 INSERT INTO STUDENT VALUES(2023001, '김민준', '컴퓨터공학과', '2023-03-02');
 INSERT INTO STUDENT VALUES(2023002, '이서연', '경영학과', '2023-03-02');
 INSERT INTO STUDENT VALUES(2023003, '박지후', '전자공학과', '2023-03-02');
@@ -142,31 +145,143 @@ INSERT INTO GRADE VALUES(2023003, 'C102', 3.9);
 INSERT INTO GRADE VALUES(2023004, 'C104', 3.6);
 INSERT INTO GRADE VALUES(2023005, 'C103', 4.4);
 
--- 3) 조회 및 분석 문제
+-- [3단계] 조회 및 분석 문제
 
-/*
-	1. 모든 학생의 이름, 학과명, 입학일을 조회하시오.
-	2️. 각 학생의 평균 평점을 구하시오.
-	3️. 평균 평점이 3.5 이상인 학생만 조회하시오.
-	4️. 과목별 최고 점수를 받은 학생 이름과 점수를 조회하시오.
-	5️. 학과별로 평균 점수가 가장 높은 학생을 조회하시오.
-	6️. “컴퓨터공학과” 학생들의 평균보다 높은 점수를 받은 학생을 조회하시오.
-	7.️ 학생 이름에 ‘하’가 포함된 학생을 조회하시오.*/
-
--- 1
+-- 1. 모든 학생의 이름, 학과명, 입학일을 조회하시오.
 SELECT STUDENT_NAME, DEPT_NAME, ENTRANCE_DATE
 FROM STUDENT;
 
--- 2
+-- 2️. 각 학생의 평균 평점을 구하시오.
 SELECT STUDENT_NAME, AVG(POINT) FROM GRADE
 JOIN STUDENT USING (STUDENT_NO)
 GROUP BY STUDENT_NAME;
 
--- 3
+-- 3️. 평균 평점이 3.5 이상인 학생만 조회하시오.
+SELECT STUDENT_NO, STUDENT_NAME, DEPT_NAME, AVG(POINT)
+FROM STUDENT JOIN GRADE USING (STUDENT_NO)
+GROUP BY STUDENT_NO, STUDENT_NAME, DEPT_NAME
+HAVING AVG(POINT) >= 3.5;
+
+-- 4️. 과목별 최고 점수를 받은 학생 이름과 점수를 조회하시오.
+SELECT STUDENT_NAME, POINT
+FROM STUDENT 
+JOIN GRADE USING(STUDENT_NO)
+WHERE POINT IN 
+(SELECT MAX(POINT) 
+FROM GRADE 
+JOIN SUBJECT USING(SUBJECT_NO) 
+GROUP BY SUBJECT_NO);
+
+-- 5️. 학과별로 평균 점수가 가장 높은 학생을 조회하시오.
+SELECT STUDENT_NAME, DEPT_NAME, AVG(POINT)
+FROM STUDENT MAIN JOIN GRADE USING (STUDENT_NO)
+GROUP BY STUDENT_NAME, DEPT_NAME
+HAVING AVG(POINT) = 
+(SELECT MAX(AVG(POINT))
+FROM STUDENT SUB 
+JOIN GRADE USING(STUDENT_NO)
+WHERE MAIN.DEPT_NAME = SUB.DEPT_NAME
+GROUP BY DEPT_NAME);
+
+-- 6️. “컴퓨터공학과” 학생들의 평균보다 높은 점수를 받은 학생을 조회하시오.
+SELECT STUDENT_NAME, AVG(POINT)
+FROM STUDENT JOIN GRADE USING(STUDENT_NO)
+GROUP BY STUDENT_NAME
+HAVING AVG(POINT) > 
+(SELECT AVG(POINT) FROM GRADE JOIN STUDENT USING (STUDENT_NO) WHERE DEPT_NAME = '컴퓨터공학과');
+
+-- 7.️ 학생 이름에 ‘하’가 포함된 학생을 조회하시오.
+SELECT STUDENT_NO, STUDENT_NAME, DEPT_NAME 
+FROM STUDENT
+WHERE STUDENT_NAME LIKE '%하%';
+
+-- [4단계] 구조 변경 및 트랜잭션
+
+-- 1. STUDENT 테이블에 EMAIL 컬럼 추가
+ALTER TABLE STUDENT ADD(EMAIL VARCHAR2(100));
+
+-- 2. STUDENT_NAME 컬럼명을 NAME으로 변경
+ALTER TABLE STUDENT RENAME COLUMN STUDENT_NAME TO NAME;
+
+-- 3. 특정 학생의 학과를 변경한 후 COMMIT 수행
+UPDATE STUDENT SET DEPT_NAME = '주얼리디자인학과'
+WHERE DEPT_NAME = '디자인학과';
+
+COMMIT;
+
+-- 4. 다른 학생의 점수를 변경한 뒤 ROLLBACK 수행
+UPDATE GRADE SET POINT = 3.8
+WHERE STUDENT_NO = '2023002';
+
+ROLLBACK;
+
+
+-- 12. 문제 2. 기업 인사관리 시스템 (VIEW + SEQUENCE + INDEX + DCL + TCL)
+-- => 직원과 부서 정보를 관리하는 인사관리 시스템을 구축하시오. VIEW, SEQUENCE, INDEX, DCL, TCL을 모두 포함해야 한다.
+
+-- [1단계] 테이블 생성 (DDL)
+/*
+ 
+| 테이블           | 주요 컬럼                                      | 설명    |
+| -------------- | -------------------------------------------- | ----- |
+| **DEPARTMENT** | DEPT_ID, DEPT_NAME                           | 부서 정보 |
+| **EMPLOYEE**   | EMP_ID, EMP_NAME, DEPT_ID, SALARY, HIRE_DATE | 직원 정보 |
+
+	- DEPT_ID는 PRIMARY KEY
+	- EMP_ID는 PRIMARY KEY
+	- DEPT_ID는 EMPLOYEE 테이블의 외래키
+	- SALARY는 0 이상만 허용 (CHECK)
+	- HIRE_DATE는 기본값 SYSDATE
+
+*/
 
 
 
+-- [2단계] 데이터 삽입 (DML)
 
+/*
+ 
+| DEPT_ID | DEPT_NAME |
+| ------- | --------- |
+| D001    | 인사부       |
+| D002    | 개발부       |
+| D003    | 영업부       |
+
+| EMP_ID    | EMP_NAME | DEPT_ID | SALARY  | HIRE_DATE |
+| --------- | -------- | ------- | ------- | --------- |
+| (시퀀스로 생성) | 김하늘      | D002    | 4200000 | SYSDATE   |
+| (시퀀스로 생성) | 이준호      | D002    | 3800000 | SYSDATE   |
+| (시퀀스로 생성) | 박서연      | D001    | 3500000 | SYSDATE   |
+| (시퀀스로 생성) | 정도윤      | D003    | 4000000 | SYSDATE   |
+| (시퀀스로 생성) | 윤지민      | D003    | 3100000 | SYSDATE   |
+
+ - 사번은 SEQ_EMP 시퀀스로 자동 증가되도록 할 것
+ - 각 부서에 직원 2명 이상 존재하도록 할 것
+
+*/
+
+-- [3단계] 조회 및 분석 문제
+
+-- 1. 모든 직원의 이름, 부서명, 급여, 입사일을 조회하시오.
+-- 2. 부서별 평균 급여를 구하시오.
+-- 3. 평균 급여 이상을 받는 직원의 이름과 급여를 조회하시오.
+-- 4. 급여가 가장 높은 직원의 이름과 부서명을 조회하시오.
+-- 5. 급여가 4,000,000 이상인 직원만 조회되는 VIEW를 생성하시오.
+-- 6. 급여 컬럼에 인덱스를 생성하시오.
+-- 7. 특정 부서의 급여를 10% 인상한 뒤 SAVEPOINT를 설정하고, 일부만 ROLLBACK하시오.
+
+-- [4단계] 권한 제어 (DCL)
+
+-- 1. HR_USER 계정을 생성하시오.
+-- 2. CREATE SESSION 및 SELECT ON VW_HIGH_SAL 권한을 부여하시오.
+-- 3. 부여된 권한을 회수하시오.
+
+-- [5단계] 확장 문제 (심화)
+
+-- 1. 부서별 급여 합계를 구하시오.
+-- 2. 급여 합계가 가장 높은 부서를 조회하시오.
+-- 3. “개발부” 평균 급여보다 높은 직원만 조회하시오.
+-- 4. 시퀀스의 NEXTVAL, CURRVAL을 직접 확인하시오.
 
 
 
