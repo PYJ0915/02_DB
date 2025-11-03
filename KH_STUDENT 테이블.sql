@@ -181,7 +181,3 @@ SELECT * FROM KH_CLUB;
 
 
 
-
-
-
-
